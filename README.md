@@ -2,6 +2,9 @@
 
 Este es un visualizador de productos interactivo desarrollado con tecnologías web nativas (**HTML5, CSS3 y JavaScript**). Permite a los usuarios explorar una paleta de colores corporativa y previsualizar en tiempo real cómo lucirá la prenda, garantizando una precisión cromática absoluta sin perder el volumen físico del producto.
 
+[ Ver proyecto en vivo](https://landirianositeoficial-pro.github.io/Selector-de-color-para-franelas-/)
+
+
 ## 🚀 Características Clave
 
 * **Renderizado Local Seguro:** Diseñado con lógica basada en el elemento `<canvas>` de HTML5 para saltarse las restricciones estrictas de aislamiento de archivos locales (`file:///` o bloqueos CORS).
