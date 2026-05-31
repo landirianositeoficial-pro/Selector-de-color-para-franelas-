@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configurador de Franela Pro - Comercial</title>
+<style>
+  body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #2c2c2e; font-family: system-ui, -apple-system, sans-serif; }
+  .card { background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 340px; text-align: center; transition: background-color 0.4s ease; }
+  .canvas-container { width: 100%; display: flex; justify-content: center; margin-bottom: 20px; }
+  canvas { max-width: 100%; height: auto; object-fit: contain; }
+  .info { margin-bottom: 15px; }
+  .name { font-weight: 600; font-size: 1.25em; text-transform: capitalize; margin: 0 0 4px; color: #1a1a1c; }
+  .hex { color: #8e8e93; font-size: 0.9em; margin: 0; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+  
+  /* NUEVOS ESTILOS PARA EL BOTÓN DE COPIAR */
+  .copy-btn { background: #1a1a1c; color: #ffffff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.9em; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 22px; transition: background-color 0.2s, transform 0.1s; outline: none; }
+  .copy-btn:hover { background: #3a3a3c; }
+  .copy-btn:active { transform: scale(0.96); }
+  .copy-btn.copied { background: #34c759; } /* Color verde cuando copia exitosamente */
+
+  .palette { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s; padding: 0; outline: none; }
+  .color-btn:hover { transform: scale(1.15); }
+  .color-btn.active { transform: scale(1.25); border: 2px solid #1a1a1c; box-shadow: 0 0 0 2px #fff inset; }
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="canvas-container">
+    <canvas id="canvas" width="400" height="400"></canvas>
+  </div>
+  <div class="info">
+    <p class="name" id="colorName"></p>
+    <p class="hex" id="colorHex"></p>
+  </div>
+  
+  <!-- NUEVO BOTÓN HTML -->
+  <button class="copy-btn" id="copyBtn">
+    <span id="copyBtnText">Copiar Datos</span>
+  </button>
+
+  <div class="palette" id="palette"></div>
+</div>
+
+<script>
+const colors = [
+    { hex: "#ffffff", name: "blanco" }, { hex: "#fffdcf", name: "beige" }, { hex: "#f8f6f1", name: "blanco perlado" },
+    { hex: "#fefa9b", name: "amarillo pastel" }, { hex: "#f6e82c", name: "amarillo" }, { hex: "#77ffaa", name: "verde menta" },
+    { hex: "#ffd3ac", name: "melon" }, { hex: "#d5e0a4", name: "pistacho" }, { hex: "#9de5ff", name: "azul claro" },
+    { hex: "#ffb1cb", name: "rosado bebe" }, { hex: "#e9b8bb", name: "rosa vieja" }, { hex: "#f1abb0", name: "coral claro" },
+    { hex: "#c1b698", name: "crema" }, { hex: "#1cd6ea", name: "turqueza" }, { hex: "#3ebb9d", name: "verde" },
+    { hex: "#90979d", name: "gris claro" }, { hex: "#b979cf", name: "mora lila" }, { hex: "#00adaf", name: "menta" },
+    { hex: "#bd8603", name: "mostaza" }, { hex: "#2e96ef", name: "azul" }, { hex: "#f160af", name: "fucsia claro" },
+    { hex: "#eb009b", name: "fucsia" }, { hex: "#cb0000", name: "rojo" }, { hex: "#0019de", name: "azul rey" },
+    { hex: "#590303", name: "vinotinto" }, { hex: "#000000", name: "negro" }
+];
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const card = document.getElementById('card');
+const nameEl = document.getElementById('colorName');
+const hexEl = document.getElementById('colorHex');
+const paletteEl = document.getElementById('palette');
+const copyBtn = document.getElementById('copyBtn');
+const copyBtnText = document.getElementById('copyBtnText');
+
+const imgBase = new Image();
+const imgBlanca = new Image();
+
+let imagenesCargadas = 0;
+let currentColor = colors[0];
+let activeBtn = null;
+
+function verificarCarga() {
+    imagenesCargadas++;
+    if (imagenesCargadas === 2) {
+        canvas.width = imgBase.naturalWidth || 400;
+        canvas.height = imgBase.naturalHeight || 400;
+        render(currentColor);
+    }
+}
+
+imgBase.onload = verificarCarga;
+imgBlanca.onload = verificarCarga;
+
+imgBase.src = 'franela-base.png';
+imgBlanca.src = 'franela-blanca.png';
+
+function render(color) {
+    if (imagenesCargadas < 2) return;
+    
+    currentColor = color;
+    nameEl.textContent = color.name;
+    hexEl.textContent = color.hex;
+    
+    card.style.backgroundColor = (color.name === 'blanco' || color.name === 'blanco perlado') ? '#e4e4e6' : '#ffffff';
+    
+    ctx.clearRect(0, 0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (color.name === 'blanco') {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1.0;
+        ctx.drawImage(imgBlanca, 0, 0, canvas.width, canvas.height);
+    } else {
+        ctx.fillStyle = color.hex;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.globalAlpha = 0.85;
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.drawImage(imgBase, 0, 0, canvas.width, canvas.height);
+        
+        ctx.globalAlpha = 0.15;
+        ctx.globalCompositeOperation = 'screen'; 
+        ctx.drawImage(imgBase, 0, 0, canvas.width, canvas.height);
+        
+        ctx.globalAlpha = 1.0;
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.drawImage(imgBase, 0, 0, canvas.width, canvas.height);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+}
+
+// NUEVA LÓGICA DE COPIADO AL PORTAPAPELES
+copyBtn.onclick = () => {
+    // Texto formateado de forma elegante para el portapapeles
+    const textToCopy = `Franela seleccionada - Color: ${currentColor.name} (Código HEX: ${currentColor.hex})`;
+    
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        // Feedback visual de éxito
+        copyBtnText.textContent = "¡Copiado!";
+        copyBtn.classList.add('copied');
+        
+        // Regresar el botón a su estado original después de 1.5 segundos
+        setTimeout(() => {
+            copyBtnText.textContent = "Copiar Datos";
+            copyBtn.classList.remove('copied');
+        }, 1500);
+    }).catch(err => {
+        console.error('Error al copiar: ', err);
+    });
+};
+
+colors.forEach((color, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'color-btn';
+    btn.style.backgroundColor = color.hex;
+    btn.title = color.name;
+    
+    if (i === 0) {
+        btn.classList.add('active');
+        activeBtn = btn;
+    }
+    
+    btn.onclick = () => {
+        if (activeBtn) activeBtn.classList.remove('active');
+        btn.classList.add('active');
+        activeBtn = btn;
+        render(color);
+    };
+    
+    paletteEl.appendChild(btn);
+});
+</script>
+</body>
+</html>
